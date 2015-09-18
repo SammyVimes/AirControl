@@ -1,13 +1,18 @@
 package com.danilov.aircontrol.activity;
 
+import android.content.Context;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -16,16 +21,20 @@ import android.widget.Toast;
 import com.danilov.aircontrol.R;
 import com.danilov.aircontrol.core.WiFiSecurity;
 import com.danilov.aircontrol.core.WiFiUtils;
+import com.danilov.aircontrol.core.model.WiFiAPN;
 import com.danilov.aircontrol.task.GetAvailableWiFiNetworksTask;
 import com.danilov.aircontrol.task.Task;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 
-public class WiFiNetworksActivity extends BaseActivity {
+public class WiFiNetworksActivity extends BaseActivity implements View.OnClickListener {
 
+    private static final String TAG = "WiFiNetworksActivity";
     private RecyclerView scanResultsView;
+    private ScanResultsAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +52,12 @@ public class WiFiNetworksActivity extends BaseActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        scanResultsView.setAdapter(new ScanResultsAdapter(result));
+                        List<WiFiAPN> apns = new ArrayList<WiFiAPN>(result.size());
+                        for (ScanResult scanResult : result) {
+                            apns.add(new WiFiAPN(scanResult.SSID, WiFiUtils.getScanResultSecurity(scanResult), false));
+                        }
+                        adapter = new ScanResultsAdapter(apns);
+                        scanResultsView.setAdapter(adapter);
                     }
                 });
             }
@@ -61,34 +75,115 @@ public class WiFiNetworksActivity extends BaseActivity {
         }.start();
     }
 
+    @Override
+    public void onClick(final View view) {
+        int position = scanResultsView.getChildLayoutPosition(view);
+        WiFiAPN wiFiAPN = adapter.getScanResultList().get(position);
+        connectToAP(wiFiAPN, "samvimes");
+    }
+
+    public void connectToAP(final WiFiAPN wiFiAPN, String passkey) {
+
+        WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+        WifiConfiguration wifiConfiguration = new WifiConfiguration();
+
+        String networkSSID = wiFiAPN.getSsid();
+        String networkPass = passkey;
+
+        switch (wiFiAPN.getSecurity()) {
+            case WEP:
+                wifiConfiguration.SSID = "\"" + networkSSID + "\"";
+                wifiConfiguration.wepKeys[0] = "\"" + networkPass + "\"";
+                wifiConfiguration.wepTxKeyIndex = 0;
+                wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+                int res = wifiManager.addNetwork(wifiConfiguration);
+                Log.d(TAG, "### 1 ### add Network returned " + res);
+
+                boolean b = wifiManager.enableNetwork(res, true);
+                Log.d(TAG, "# enableNetwork returned " + b);
+
+                wifiManager.setWifiEnabled(true);
+                break;
+            case OPEN:
+                wifiConfiguration.SSID = "\"" + networkSSID + "\"";
+                wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                res = wifiManager.addNetwork(wifiConfiguration);
+                Log.d(TAG, "# add Network returned " + res);
+
+                b = wifiManager.enableNetwork(res, true);
+                Log.d(TAG, "# enableNetwork returned " + b);
+
+                wifiManager.setWifiEnabled(true);
+                break;
+        }
+
+        wifiConfiguration.SSID = "\"" + networkSSID + "\"";
+        wifiConfiguration.preSharedKey = "\"" + networkPass + "\"";
+        wifiConfiguration.hiddenSSID = true;
+        wifiConfiguration.status = WifiConfiguration.Status.ENABLED;
+        wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+        wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+        wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+        wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+        wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+        wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+        wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+
+        int res = wifiManager.addNetwork(wifiConfiguration);
+        Log.d(TAG, "### 2 ### add Network returned " + res);
+
+        wifiManager.enableNetwork(res, true);
+
+        boolean changeHappen = wifiManager.saveConfiguration();
+
+        if(res != -1 && changeHappen){
+            Log.d(TAG, "### Change happen");
+
+//            AppStaticVar.connectedSsidName = networkSSID;
+
+        }else{
+            Log.d(TAG, "*** Change NOT happen");
+        }
+
+        wifiManager.setWifiEnabled(true);
+
+    }
+
     private class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultViewHolder> {
 
-        private List<ScanResult> scanResultList;
+        private List<WiFiAPN> scanResultList;
 
-        private ScanResultsAdapter(final List<ScanResult> scanResultList) {
+        private ScanResultsAdapter(final List<WiFiAPN> scanResultList) {
             this.scanResultList = scanResultList;
         }
 
         @Override
         public ScanResultViewHolder onCreateViewHolder(final ViewGroup parent, final int viewType) {
             View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.scan_result_item, parent, false);
+            v.setOnClickListener(WiFiNetworksActivity.this);
             return new ScanResultViewHolder(v);
         }
 
         @Override
         public void onBindViewHolder(final ScanResultViewHolder holder, final int position) {
-            ScanResult scanResult = scanResultList.get(position);
-            String name = scanResult.SSID;
+            WiFiAPN scanResult = scanResultList.get(position);
+            String name = scanResult.getSsid();
             holder.name.setText(name);
-            WiFiSecurity security = WiFiUtils.getScanResultSecurity(scanResult);
+            WiFiSecurity security = scanResult.getSecurity();
             holder.security.setText(security.toString());
-            boolean isKnown = false;
+            boolean isKnown = scanResult.isKnown();
             holder.isKnown.setVisibility(isKnown ? View.VISIBLE : View.INVISIBLE);
         }
 
         @Override
         public int getItemCount() {
             return scanResultList.size();
+        }
+
+        public List<WiFiAPN> getScanResultList() {
+            return scanResultList;
         }
 
     }
