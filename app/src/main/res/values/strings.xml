@@ -10,5 +10,9 @@
     <string name="connection_error">Ошибка соединения</string>
     <string name="connecting">Идёт подключение</string>
     <string name="connected">Соединение установлено</string>
+    <string name="wifi_requiered">Для работы необходим WiFi</string>
+    <string name="enable_question">Включить?</string>
+    <string name="no">Нет</string>
+    <string name="enable">Включить</string>
 
 </resources>

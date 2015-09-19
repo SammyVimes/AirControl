@@ -76,6 +76,12 @@ public class ControlActivity extends BaseActivity {
                 view(R.id.btn10).setOnTouchListener(listener);
                 view(R.id.btn11).setOnTouchListener(listener);
                 view(R.id.btn12).setOnTouchListener(listener);
+
+                if (connection == null) {
+                    connection = new Connection();
+                    startConnection();
+                }
+
             }
         });
     }
@@ -260,10 +266,12 @@ public class ControlActivity extends BaseActivity {
     }
 
     private void closeConnection() {
+        final Connection conn = connection;
+        connection = null;
         connectionHandler.post(new Runnable() {
             @Override
             public void run() {
-                connection.close();
+                conn.close();
             }
         });
     }
@@ -276,9 +284,12 @@ public class ControlActivity extends BaseActivity {
 
     @Override
     protected void onResume() {
+        super.onResume();
+        if (connection != null) {
+            return;
+        }
         connection = new Connection();
         startConnection();
-        super.onResume();
     }
 
     private String getMessageById(final int id) {

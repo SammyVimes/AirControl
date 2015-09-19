@@ -26,7 +26,7 @@ public class GetAvailableWiFiNetworksTask extends Task<List<ScanResult>> {
     private final BroadcastReceiver scanResultsReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            context.unregisterReceiver(this);
+            GetAvailableWiFiNetworksTask.this.context.unregisterReceiver(this);
             List<ScanResult> scanResults = wifiManager.getScanResults();
             if (scanResults != null) {
                 onTaskComplete(scanResults);

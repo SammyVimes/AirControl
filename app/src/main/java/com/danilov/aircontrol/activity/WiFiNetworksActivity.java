@@ -2,14 +2,21 @@ package com.danilov.aircontrol.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -49,7 +56,33 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
         scanResultsView = view(R.id.scan_results);
         connectionStateView = view(R.id.connection_state);
         scanResultsView.setLayoutManager(new LinearLayoutManager(this));
-        startWifiTask();
+        checkWifiState();
+    }
+
+    private void checkWifiState() {
+        final WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager.isWifiEnabled()) {
+            startWifiTask();
+        } else {
+            AppCompatDialog appCompatDialog = null;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(getString(R.string.wifi_requiered));
+            builder.setMessage(getString(R.string.enable_question));
+            builder.setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(final DialogInterface dialog, final int which) {
+
+                }
+            });
+            builder.setPositiveButton(getString(R.string.enable), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(final DialogInterface dialog, final int which) {
+                    wifiManager.setWifiEnabled(true);
+                }
+            });
+            appCompatDialog = builder.create();
+            appCompatDialog.show();
+        }
     }
 
     private void startWifiTask() {
@@ -91,11 +124,17 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
     public void onClick(final View view) {
         int position = scanResultsView.getChildLayoutPosition(view);
         WiFiAPN wiFiAPN = adapter.getScanResultList().get(position);
-        WiFiConnectDialog wiFiConnectDialog = new WiFiConnectDialog();
-        Bundle args = new Bundle();
-        args.putSerializable(WiFiConnectDialog.WIFI_KEY, wiFiAPN);
-        wiFiConnectDialog.setArguments(args);
-        wiFiConnectDialog.show(getFragmentManager(), "connectDialog");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String passkey = sharedPreferences.getString("WIFI_" + wiFiAPN.getSsid(), "");
+        if ("".equals(passkey)) {
+            WiFiConnectDialog wiFiConnectDialog = new WiFiConnectDialog();
+            Bundle args = new Bundle();
+            args.putSerializable(WiFiConnectDialog.WIFI_KEY, wiFiAPN);
+            wiFiConnectDialog.setArguments(args);
+            wiFiConnectDialog.show(getFragmentManager(), "connectDialog");
+        } else {
+            connectToAP(wiFiAPN, passkey);
+        }
     }
 
     public void connectToAP(final WiFiAPN wiFiAPN, String passkey) {
@@ -103,6 +142,7 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
         WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
         targetAPN = wiFiAPN;
+        this.passkey = passkey;
 
         WifiInfo connectionInfo = wifiManager.getConnectionInfo();
         if (connectionInfo != null) {
@@ -178,21 +218,26 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
     }
 
     private WiFiAPN targetAPN = null;
+    private String passkey = null;
 
     private BroadcastReceiver wifiConnectedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            if (targetAPN == null) {
+            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+            if (!wifiManager.isWifiEnabled()) {
                 return;
             }
-            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            if (targetAPN == null) {
+                startWifiTask();
+                return;
+            }
 
             WifiInfo connectionInfo = wifiManager.getConnectionInfo();
             if (connectionInfo != null) {
                 String curSSID = connectionInfo.getSSID();
                 String targetSSID = "\"" + targetAPN.getSsid() + "\"";
                 if (targetSSID.equals(curSSID)) {
-                    connectionStateView.setVisibility(View.GONE);
                     onConnected();
                 }
             }
@@ -200,8 +245,19 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
         }
     };
 
+    private Handler handler = new Handler();
+
     private void onConnected() {
-        startActivity(new Intent(this, ControlActivity.class));
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sharedPreferences.edit().putString("WIFI_" + targetAPN.getSsid(), passkey).apply();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                connectionStateView.setVisibility(View.GONE);
+                targetAPN = null;
+                startActivity(new Intent(WiFiNetworksActivity.this, ControlActivity.class));
+            }
+        }, 500);
     }
 
     @Override
@@ -268,29 +324,5 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
             isKnown = (TextView) itemView.findViewById(R.id.is_known);
         }
     }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_wi_fi_networks, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
 
 }
