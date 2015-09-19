@@ -1,8 +1,12 @@
 package com.danilov.aircontrol.activity;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -22,6 +26,7 @@ import com.danilov.aircontrol.R;
 import com.danilov.aircontrol.core.WiFiSecurity;
 import com.danilov.aircontrol.core.WiFiUtils;
 import com.danilov.aircontrol.core.model.WiFiAPN;
+import com.danilov.aircontrol.dialog.WiFiConnectDialog;
 import com.danilov.aircontrol.task.GetAvailableWiFiNetworksTask;
 import com.danilov.aircontrol.task.Task;
 
@@ -34,6 +39,7 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
 
     private static final String TAG = "WiFiNetworksActivity";
     private RecyclerView scanResultsView;
+    private View connectionStateView;
     private ScanResultsAdapter adapter;
 
     @Override
@@ -41,6 +47,7 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_wi_fi_networks);
         scanResultsView = view(R.id.scan_results);
+        connectionStateView = view(R.id.connection_state);
         scanResultsView.setLayoutManager(new LinearLayoutManager(this));
         startWifiTask();
     }
@@ -64,7 +71,12 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
 
             @Override
             public void onError(@NonNull final Throwable t) {
-                Toast.makeText(WiFiNetworksActivity.this, "Error while getting available wifi networks: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(WiFiNetworksActivity.this, "Error while getting available wifi networks: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         }, this);
         new Thread() {
@@ -79,12 +91,28 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
     public void onClick(final View view) {
         int position = scanResultsView.getChildLayoutPosition(view);
         WiFiAPN wiFiAPN = adapter.getScanResultList().get(position);
-        connectToAP(wiFiAPN, "samvimes");
+        WiFiConnectDialog wiFiConnectDialog = new WiFiConnectDialog();
+        Bundle args = new Bundle();
+        args.putSerializable(WiFiConnectDialog.WIFI_KEY, wiFiAPN);
+        wiFiConnectDialog.setArguments(args);
+        wiFiConnectDialog.show(getFragmentManager(), "connectDialog");
     }
 
     public void connectToAP(final WiFiAPN wiFiAPN, String passkey) {
 
         WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+        targetAPN = wiFiAPN;
+
+        WifiInfo connectionInfo = wifiManager.getConnectionInfo();
+        if (connectionInfo != null) {
+            String curSSID = connectionInfo.getSSID();
+            String targetSSID = "\"" + wiFiAPN.getSsid() + "\"";
+            if (targetSSID.equals(curSSID)) {
+                onConnected();
+                return;
+            }
+        }
 
         WifiConfiguration wifiConfiguration = new WifiConfiguration();
 
@@ -140,15 +168,54 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
 
         if(res != -1 && changeHappen){
             Log.d(TAG, "### Change happen");
-
-//            AppStaticVar.connectedSsidName = networkSSID;
-
-        }else{
+        } else {
             Log.d(TAG, "*** Change NOT happen");
         }
 
         wifiManager.setWifiEnabled(true);
 
+        connectionStateView.setVisibility(View.VISIBLE);
+    }
+
+    private WiFiAPN targetAPN = null;
+
+    private BroadcastReceiver wifiConnectedReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            if (targetAPN == null) {
+                return;
+            }
+            WifiManager wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+            WifiInfo connectionInfo = wifiManager.getConnectionInfo();
+            if (connectionInfo != null) {
+                String curSSID = connectionInfo.getSSID();
+                String targetSSID = "\"" + targetAPN.getSsid() + "\"";
+                if (targetSSID.equals(curSSID)) {
+                    connectionStateView.setVisibility(View.GONE);
+                    onConnected();
+                }
+            }
+
+        }
+    };
+
+    private void onConnected() {
+        startActivity(new Intent(this, ControlActivity.class));
+    }
+
+    @Override
+    protected void onResume() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION );
+        registerReceiver(wifiConnectedReceiver, intentFilter);
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        unregisterReceiver(wifiConnectedReceiver);
+        super.onPause();
     }
 
     private class ScanResultsAdapter extends RecyclerView.Adapter<ScanResultViewHolder> {

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer name="server_port">22000</integer>
+    <integer name="connection_timeout">2500</integer>
+
+</resources>
