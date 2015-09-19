@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="connecting">#e5e7a0</color>
+    <color name="connected">#a8e7a0</color>
+    <color name="connection_error">#e7a0a0</color>
+    <color name="text_color">#fff</color>
+
+</resources>

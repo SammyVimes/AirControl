@@ -2,133 +2,140 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                android:animateLayoutChanges="true"
                 tools:context=".WiFiNetworksActivity">
 
     <LinearLayout
-        android:id="@+id/connection_error"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#e7a0a0"
-        android:visibility="gone"
-        android:gravity="center"
+        android:animateLayoutChanges="true"
         android:orientation="horizontal"
-        android:padding="5dp">
-
-        <TextView
-            android:text="Ошибка соединения. Нажмите, для переподключения."
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/connection_state"
-        android:layout_below="@id/connection_error"
+        android:id="@+id/m_toolbar"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:background="#e5e7a0"
-        android:visibility="gone"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="5dp">
+        android:layout_height="60dp"
+        android:background="#000">
+
+        <ImageButton
+            android:id="@+id/reconnect"
+            android:visibility="gone"
+            android:src="@drawable/ic_refresh"
+            android:background="@null"
+            android:layout_width="60dp"
+            android:layout_height="60dp"/>
 
         <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/progressBar"/>
+            android:id="@+id/progress_bar"
+            android:visibility="gone"
+            android:layout_width="60dp"
+            android:layout_height="60dp"/>
 
         <TextView
-            android:text="Идёт подключение"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/status"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:gravity="center"
+            android:textColor="@color/text_color"
+            android:shadowColor="#000000"
+            android:shadowDx="0.0"
+            android:shadowDy="0.0"
+            android:shadowRadius="4.0"
             android:textSize="18sp"/>
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/left"
-        android:layout_below="@id/connection_state"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-        <Button
-            android:id="@+id/btn1"
-            android:text="1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn2"
-            android:text="2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn3"
-            android:text="3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn4"
-            android:text="4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn5"
-            android:text="5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn6"
-            android:text="6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 
-
-    <LinearLayout
-        android:layout_toRightOf="@id/left"
-        android:layout_below="@id/connection_state"
-        android:orientation="vertical"
+    <ImageView
+        android:id="@+id/shadow"
+        android:layout_below="@+id/m_toolbar"
+        android:src="@drawable/material_shadow"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:id="@+id/btn7"
-            android:text="7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn8"
-            android:text="8"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn9"
-            android:text="9"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn10"
-            android:text="10"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn11"
-            android:text="11"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:id="@+id/btn12"
-            android:text="12"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        android:layout_height="2dp"/>
 
-    </LinearLayout>
+    <RelativeLayout
+        android:layout_below="@+id/shadow"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin">
+
+        <LinearLayout
+            android:id="@+id/left"
+            android:orientation="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/btn1"
+                android:text="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn2"
+                android:text="2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn3"
+                android:text="3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn4"
+                android:text="4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn5"
+                android:text="5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn6"
+                android:text="6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_toRightOf="@id/left"
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn7"
+                android:text="7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn8"
+                android:text="8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn9"
+                android:text="9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn10"
+                android:text="10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn11"
+                android:text="11"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <Button
+                android:id="@+id/btn12"
+                android:text="12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
 
 </RelativeLayout>

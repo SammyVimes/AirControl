@@ -6,6 +6,9 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.danilov.aircontrol.R;
 
@@ -29,18 +32,14 @@ public class ControlActivity extends BaseActivity {
     private View connectionStateView;
     private View connectionErrorView;
 
+    private ProgressBar connectionProgressBar;
+    private ImageButton reconnectButton;
+    private TextView connectionStatus;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
-        connectionStateView = view(R.id.connection_state);
-        connectionErrorView = view(R.id.connection_error);
-        connectionErrorView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                startConnection();
-            }
-        });
         connectionThread = new HandlerThread(CONNECTION_THREAD) {
             @Override
             protected void onLooperPrepared() {
@@ -49,6 +48,15 @@ public class ControlActivity extends BaseActivity {
             }
         };
         connectionThread.start();
+        connectionProgressBar = view(R.id.progress_bar);
+        reconnectButton = view(R.id.reconnect);
+        reconnectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                startConnection();
+            }
+        });
+        connectionStatus = view(R.id.status);
     }
 
     private void init() {
@@ -218,8 +226,10 @@ public class ControlActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                connectionStateView.setVisibility(View.GONE);
-                connectionErrorView.setVisibility(View.VISIBLE);
+                connectionStatus.setText(getString(R.string.connection_error));
+                connectionStatus.setBackgroundColor(color(R.color.connection_error));
+                connectionProgressBar.setVisibility(View.GONE);
+                reconnectButton.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -228,18 +238,23 @@ public class ControlActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                connectionStateView.setVisibility(View.VISIBLE);
-                connectionErrorView.setVisibility(View.GONE);
+                connectionStatus.setText(getString(R.string.connecting));
+                connectionStatus.setBackgroundColor(color(R.color.connecting));
+                connectionProgressBar.setVisibility(View.VISIBLE);
+                reconnectButton.setVisibility(View.GONE);
             }
         });
+
     }
 
     private void onConnected() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                connectionStateView.setVisibility(View.GONE);
-                connectionErrorView.setVisibility(View.GONE);
+                connectionStatus.setText(getString(R.string.connected));
+                connectionStatus.setBackgroundColor(color(R.color.connected));
+                connectionProgressBar.setVisibility(View.GONE);
+                reconnectButton.setVisibility(View.GONE);
             }
         });
     }
