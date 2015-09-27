@@ -295,7 +295,6 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
             String name = scanResult.getSsid();
             holder.name.setText(name);
             WiFiSecurity security = scanResult.getSecurity();
-            holder.security.setText(security.toString());
             boolean isKnown = scanResult.isKnown();
             holder.isKnown.setVisibility(isKnown ? View.VISIBLE : View.INVISIBLE);
         }
@@ -314,13 +313,11 @@ public class WiFiNetworksActivity extends BaseActivity implements View.OnClickLi
     class ScanResultViewHolder extends RecyclerView.ViewHolder {
 
         private TextView name;
-        private TextView security;
         private TextView isKnown;
 
         public ScanResultViewHolder(View itemView) {
             super(itemView);
             name = (TextView) itemView.findViewById(R.id.name);
-            security = (TextView) itemView.findViewById(R.id.security);
             isKnown = (TextView) itemView.findViewById(R.id.is_known);
         }
     }

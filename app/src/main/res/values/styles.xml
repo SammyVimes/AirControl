@@ -6,6 +6,10 @@
         <item name="android:textViewStyle">@style/AppTheme.TextViewStyle</item>
     </style>
 
+    <style name="ControlButton" parent="@android:style/Widget.Button">
+        <item name="android:background">@drawable/btn_up</item>
+    </style>
+
     <style name="AppTheme.TextViewStyle">
         <item name="android:fontFamily">sans-serif-thin</item>
         <item name="android:typeface">sans</item>

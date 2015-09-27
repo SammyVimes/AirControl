@@ -84,7 +84,7 @@
                 android:src="@drawable/underline_blue"
                 android:scaleType="fitXY"
                 android:layout_width="fill_parent"
-                android:layout_height="25dp"/>
+                android:layout_height="10dp"/>
 
             <com.danilov.aircontrol.core.view.SafeRecyclerView
                 android:id="@+id/scan_results"
