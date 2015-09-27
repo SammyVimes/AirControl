@@ -4,26 +4,36 @@
                 android:layout_height="match_parent"
                 tools:context=".WiFiNetworksActivity">
 
+    <ImageView
+        android:src="@drawable/logo"
+        android:alpha="0.3"
+        android:scaleType="fitCenter"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"/>
+
     <LinearLayout
         android:id="@+id/m_toolbar"
-        android:background="#000"
         android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="15dp"
         android:layout_width="fill_parent"
-        android:layout_height="70dp">
+        android:layout_height="wrap_content">
 
         <TextView
-            android:text="Air Control"
-            android:textSize="25sp"
+            android:text="Air"
+            android:textSize="55sp"
             android:gravity="center"
-            android:textColor="@color/text_color"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:textColor="@color/text_color_blue"
+            android:layout_width="wrap_content"
             android:layout_height="fill_parent"/>
 
-        <ImageView
-            android:src="@drawable/ic_logo"
-            android:layout_width="70dp"
-            android:layout_height="70dp"/>
+        <TextView
+            android:text="Control"
+            android:textSize="55sp"
+            android:gravity="center"
+            android:textColor="@color/text_color"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"/>
 
     </LinearLayout>
 
@@ -57,24 +67,35 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/choose_auto_network"
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_below="@id/connection_state"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="Выберите сеть вашего автомобиля"/>
+            android:layout_height="wrap_content">
 
-        <com.danilov.aircontrol.core.view.SafeRecyclerView
-            android:id="@+id/scan_results"
-            android:layout_marginTop="15dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_below="@id/choose_auto_network"/>
+            <TextView
+                android:id="@+id/choose_auto_network"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="Сети Wi-Fi"/>
+
+            <ImageView
+                android:src="@drawable/underline_blue"
+                android:scaleType="fitXY"
+                android:layout_width="fill_parent"
+                android:layout_height="25dp"/>
+
+            <com.danilov.aircontrol.core.view.SafeRecyclerView
+                android:id="@+id/scan_results"
+                android:layout_marginLeft="15dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+
+        </LinearLayout>
 
     </RelativeLayout>
-
-
 
 </RelativeLayout>
 

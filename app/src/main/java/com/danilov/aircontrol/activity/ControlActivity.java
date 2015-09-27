@@ -1,11 +1,13 @@
 package com.danilov.aircontrol.activity;
 
+import android.animation.ObjectAnimator;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,12 +31,10 @@ public class ControlActivity extends BaseActivity {
     private Handler connectionHandler = null;
     private HandlerThread connectionThread = null;
 
-    private View connectionStateView;
-    private View connectionErrorView;
-
-    private ProgressBar connectionProgressBar;
     private ImageButton reconnectButton;
-    private TextView connectionStatus;
+    private ImageButton backButton;
+    private ImageButton stateOkButton;
+    private ImageButton stateReloading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,15 +48,22 @@ public class ControlActivity extends BaseActivity {
             }
         };
         connectionThread.start();
-        connectionProgressBar = view(R.id.progress_bar);
         reconnectButton = view(R.id.reconnect);
+        backButton = view(R.id.back);
+        stateReloading = view(R.id.status_reloading);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                finish();
+            }
+        });
+        stateOkButton = view(R.id.status_ok);
         reconnectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
                 startConnection();
             }
         });
-        connectionStatus = view(R.id.status);
     }
 
     private void init() {
@@ -76,9 +83,8 @@ public class ControlActivity extends BaseActivity {
                 view(R.id.btn10).setOnTouchListener(listener);
                 view(R.id.btn11).setOnTouchListener(listener);
                 view(R.id.btn12).setOnTouchListener(listener);
-
+                System.out.println("connection is " + connection);
                 if (connection == null) {
-                    connection = new Connection();
                     startConnection();
                 }
 
@@ -114,13 +120,16 @@ public class ControlActivity extends BaseActivity {
         connectionHandler.post(new Runnable() {
             @Override
             public void run() {
-                connection.write(message + (isPressed ? "0" : "1"));
+                if (connection != null) {
+                    connection.write(message + (isPressed ? "0" : "1"));
+                }
             }
         });
     }
 
-    private void startConnection() {
+    private synchronized void startConnection() {
         if (connectionHandler != null) {
+            connection = new Connection();
             onConnecting();
             final Connection curConnection = connection;
             connectionHandler.post(new Runnable() {
@@ -232,9 +241,9 @@ public class ControlActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                connectionStatus.setText(getString(R.string.connection_error));
-                connectionStatus.setBackgroundColor(color(R.color.connection_error));
-                connectionProgressBar.setVisibility(View.GONE);
+                stateOkButton.setVisibility(View.GONE);
+                stateReloading.setVisibility(View.GONE);
+                stopReloadAnim();
                 reconnectButton.setVisibility(View.VISIBLE);
             }
         });
@@ -244,9 +253,9 @@ public class ControlActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                connectionStatus.setText(getString(R.string.connecting));
-                connectionStatus.setBackgroundColor(color(R.color.connecting));
-                connectionProgressBar.setVisibility(View.VISIBLE);
+                stateReloading.setVisibility(View.VISIBLE);
+                startReloadAnim();
+                stateOkButton.setVisibility(View.GONE);
                 reconnectButton.setVisibility(View.GONE);
             }
         });
@@ -257,12 +266,30 @@ public class ControlActivity extends BaseActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                connectionStatus.setText(getString(R.string.connected));
-                connectionStatus.setBackgroundColor(color(R.color.connected));
-                connectionProgressBar.setVisibility(View.GONE);
+                stateOkButton.setVisibility(View.VISIBLE);
                 reconnectButton.setVisibility(View.GONE);
+                stopReloadAnim();
+                stateReloading.setVisibility(View.GONE);
             }
         });
+    }
+
+    private ObjectAnimator reloadingAnimator = null;
+
+    private void startReloadAnim() {
+        stateReloading.setRotationX(stateReloading.getWidth() / 2);
+        stateReloading.setRotationY(stateReloading.getHeight() / 2);
+        reloadingAnimator = ObjectAnimator.ofFloat(stateReloading, "rotation", 0f, 360f);
+        reloadingAnimator.setRepeatMode(ObjectAnimator.RESTART);
+        reloadingAnimator.setRepeatCount(1000);
+        reloadingAnimator.setDuration(2000);
+        reloadingAnimator.start();
+    }
+
+    private void stopReloadAnim() {
+        if (reloadingAnimator != null) {
+            reloadingAnimator.cancel();
+        }
     }
 
     private void closeConnection() {
@@ -285,10 +312,10 @@ public class ControlActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        System.out.println("onresume: connection is " + connection);
         if (connection != null) {
             return;
         }
-        connection = new Connection();
         startConnection();
     }
 

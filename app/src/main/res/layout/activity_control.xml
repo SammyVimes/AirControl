@@ -4,52 +4,94 @@
                 android:layout_height="match_parent"
                 tools:context=".WiFiNetworksActivity">
 
-    <LinearLayout
-        android:animateLayoutChanges="true"
-        android:orientation="horizontal"
-        android:id="@+id/m_toolbar"
-        android:layout_width="fill_parent"
-        android:layout_height="60dp"
-        android:background="#000">
-
-        <ImageButton
-            android:id="@+id/reconnect"
-            android:visibility="gone"
-            android:src="@drawable/ic_refresh"
-            android:background="@null"
-            android:layout_width="60dp"
-            android:layout_height="60dp"/>
-
-        <ProgressBar
-            android:id="@+id/progress_bar"
-            android:visibility="gone"
-            android:layout_width="60dp"
-            android:layout_height="60dp"/>
-
-        <TextView
-            android:id="@+id/status"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:gravity="center"
-            android:textColor="@color/text_color"
-            android:shadowColor="#000000"
-            android:shadowDx="0.0"
-            android:shadowDy="0.0"
-            android:shadowRadius="4.0"
-            android:textSize="18sp"/>
-
-
-    </LinearLayout>
-
     <ImageView
-        android:id="@+id/shadow"
-        android:layout_below="@+id/m_toolbar"
-        android:src="@drawable/material_shadow"
+        android:src="@drawable/logo"
+        android:alpha="0.3"
+        android:scaleType="fitCenter"
         android:layout_width="fill_parent"
-        android:layout_height="2dp"/>
+        android:layout_height="fill_parent"/>
 
     <RelativeLayout
-        android:layout_below="@+id/shadow"
+        android:id="@+id/m_toolbar"
+        android:padding="5dp"
+        android:layout_width="fill_parent"
+        android:layout_height="45dp">
+
+
+        <ImageButton
+            android:id="@+id/back"
+            android:src="@drawable/ic_hamburger"
+            android:background="@null"
+            android:layout_width="40dp"
+            android:layout_height="fill_parent"/>
+
+        <LinearLayout
+            android:id="@+id/app_name"
+            android:layout_toRightOf="@+id/back"
+            android:layout_toLeftOf="@+id/status_holder"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+
+            <TextView
+                android:text="Air"
+                android:textSize="25sp"
+                android:gravity="center"
+                android:textColor="@color/text_color_blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:text="Control"
+                android:textSize="25sp"
+                android:gravity="center"
+                android:textColor="@color/text_color"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/status_holder"
+            android:layout_alignParentRight="true"
+            android:orientation="horizontal"
+            android:animateLayoutChanges="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:background="@null"
+                android:id="@+id/status_ok"
+                android:visibility="gone"
+                android:src="@drawable/ic_tick"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+
+            <ImageButton
+                android:background="@null"
+                android:id="@+id/status_reloading"
+                android:visibility="gone"
+                android:src="@drawable/ic_reload"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+
+            <ImageButton
+                android:background="@null"
+                android:id="@+id/reconnect"
+                android:visibility="gone"
+                android:src="@drawable/ic_error"
+                android:layout_width="30dp"
+                android:layout_height="30dp"/>
+
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_below="@+id/m_toolbar"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:paddingLeft="@dimen/activity_horizontal_margin"
