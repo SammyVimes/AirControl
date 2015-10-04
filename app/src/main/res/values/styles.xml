@@ -8,6 +8,20 @@
 
     <style name="ControlButton" parent="@android:style/Widget.Button">
         <item name="android:background">@drawable/btn_up</item>
+        <item name="android:textColor">@color/button_color</item>
+        <item name="android:width">70dp</item>
+        <item name="android:height">70dp</item>
+        <item name="android:maxWidth">70dp</item>
+        <item name="android:maxHeight">70dp</item>
+    </style>
+
+    <style name="ControlButtonDown" parent="@android:style/Widget.Button">
+        <item name="android:background">@drawable/btn_down</item>
+        <item name="android:textColor">@color/button_color</item>
+        <item name="android:width">70dp</item>
+        <item name="android:height">70dp</item>
+        <item name="android:maxWidth">70dp</item>
+        <item name="android:maxHeight">70dp</item>
     </style>
 
     <style name="AppTheme.TextViewStyle">

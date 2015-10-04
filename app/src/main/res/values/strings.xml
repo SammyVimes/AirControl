@@ -5,7 +5,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_control">ControlActivity</string>
-    <string name="server_ip">192.168.1.1</string>
+    <string name="server_ip">192.168.0.101</string>
     <string name="final_message">0xFFFF</string>
     <string name="connection_error">Ошибка соединения</string>
     <string name="connecting">Идёт подключение</string>

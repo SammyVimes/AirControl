@@ -3,14 +3,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 tools:context=".WiFiNetworksActivity">
-
-    <ImageView
-        android:src="@drawable/logo"
-        android:alpha="0.3"
-        android:scaleType="fitCenter"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"/>
-
     <LinearLayout
         android:id="@+id/m_toolbar"
         android:orientation="horizontal"
